@@ -27,17 +27,21 @@ namespace MultiThreading.Task3.MatrixMultiplier
         private static void CreateAndProcessMatrices(byte sizeOfMatrix)
         {
             Console.WriteLine("Multiplying...");
-            var firstMatrix = new Matrix(sizeOfMatrix, sizeOfMatrix);
-            var secondMatrix = new Matrix(sizeOfMatrix, sizeOfMatrix);
+            var firstMatrix = new Matrix(sizeOfMatrix, sizeOfMatrix, true);
+            var secondMatrix = new Matrix(sizeOfMatrix, sizeOfMatrix, true);
 
-            IMatrix resultMatrix = new MatricesMultiplier().Multiply(firstMatrix, secondMatrix);
+            IMatrix resultMatrix1 = new MatricesMultiplier().Multiply(firstMatrix, secondMatrix);
+
+            IMatrix resultMatrix2 = new MatricesMultiplierParallel().Multiply(firstMatrix, secondMatrix);
 
             Console.WriteLine("firstMatrix:");
             firstMatrix.Print();
             Console.WriteLine("secondMatrix:");
             secondMatrix.Print();
-            Console.WriteLine("resultMatrix:");
-            resultMatrix.Print();
+            Console.WriteLine("resultMatrix1:");
+            resultMatrix1.Print();
+            Console.WriteLine("resultMatrix2:");
+            resultMatrix2.Print();
         }
     }
 }
