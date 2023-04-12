@@ -7,6 +7,8 @@
    Demonstrate the work of the each case with console utility.
 */
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MultiThreading.Task6.Continuation
 {
@@ -22,9 +24,53 @@ namespace MultiThreading.Task6.Continuation
             Console.WriteLine("Demonstrate the work of the each case with console utility.");
             Console.WriteLine();
 
-            // feel free to add your code
+            Task parentTask = Task.Run(() => ParentTask());
+            Task taskA = parentTask.ContinueWith(t => TaskA());
+            Task taskB = parentTask.ContinueWith((resultOfParentTask) => { if (resultOfParentTask.IsFaulted) TaskB(); });
+            Task taskC = parentTask.ContinueWith((resultOfParentTask) => { if (resultOfParentTask.IsFaulted) TaskC(); }, TaskContinuationOptions.ExecuteSynchronously);
+            Task taskD = parentTask.ContinueWith((resultOfParentTask) => { if (resultOfParentTask.IsCanceled) TaskD(); }, TaskContinuationOptions.LongRunning);
+            try
+            {
 
-            Console.ReadLine();
+                Task.WaitAll(parentTask, taskA, taskB, taskC, taskD);
+            }
+            catch
+            {
+                Console.WriteLine();
+                Console.WriteLine("Parent task was failed!");
+            }
+        }
+
+
+        private static void TaskD()
+        {
+            Console.WriteLine();
+            Console.WriteLine("TaskD Continuation task is executed outside of the thread pool when the parent task was cancelled. ThreadId : {0} ", Thread.CurrentThread.ManagedThreadId);
+        }
+
+        private static void TaskC()
+        {
+            Console.WriteLine();
+            Console.WriteLine("TaskC Continuation task is executed when the parent task was finished with fail and parent task thread was reused for continuation.  ThreadId : {0} ", Thread.CurrentThread.ManagedThreadId);
+        }
+
+        private static void TaskB()
+        {
+            Console.WriteLine();
+            Console.WriteLine("TaskB Continuation task is executed when the parent task finished without success. ThreadId : {0} ", Thread.CurrentThread.ManagedThreadId);
+        }
+
+        private static void TaskA()
+        {
+            Console.WriteLine();
+            Console.WriteLine("TaskA Continuation task is executed regardless of the result of the parent task. ThreadId : {0} ", Thread.CurrentThread.ManagedThreadId);
+        }
+
+        private static object ParentTask()
+        {
+            Console.WriteLine();
+            Console.WriteLine("Parent task is executing!  ThreadId : {0} ", Thread.CurrentThread.ManagedThreadId);
+            throw new NullReferenceException();
         }
     }
 }
