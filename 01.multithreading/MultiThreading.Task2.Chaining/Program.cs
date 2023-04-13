@@ -25,25 +25,27 @@ namespace MultiThreading.Task2.Chaining
             Console.WriteLine("Fourth Task – calculates the average value. All this tasks should print the values to console");
             Console.WriteLine();
             int[] rndmIntArray = new int[rndmIntArrayLength];
-            Task task1 = Task.Run(() => FirstTask(rndmIntArray));
-            Task task2 = Task.Run(() => task1.ContinueWith(t => SecondTask(rndmIntArray)));
-            Task task3 = Task.Run(() => task2.ContinueWith(t => ThirdTask(rndmIntArray)));
-            Task task4 = Task.Run(() => task3.ContinueWith(t => ForthTask(rndmIntArray)));
+            Task<int[]> task1 = Task.Run(() => FirstTask(rndmIntArray));
+            Task<int[]> task2 = task1.ContinueWith((task1Result) => SecondTask(task1Result));
+            Task<int[]> task3 = Task.Run(() => task2.ContinueWith(task2Result => ThirdTask(task2Result)));
+            Task task4 = Task.Run(() => task3.ContinueWith(task3Result => ForthTask(task3Result)));
             task4.Wait();
             Console.ReadLine();
         }
 
-        private static void ForthTask(int[] rndmIntArray)
+        private static void ForthTask(Task<int[]> task3Result)
         {
+            var rndmIntArray = task3Result.Result;
             Console.WriteLine();
             Console.WriteLine("ForthTask is running");
             double avg = rndmIntArray.Sum() / rndmIntArrayLength;
             Console.WriteLine("Average = " + avg);
-            Console.WriteLine("ForthTask is run");
+            Console.WriteLine("ForthTask was run");
         }
 
-        private static void ThirdTask(int[] rndmIntArray)
+        private static int[] ThirdTask(Task<int[]> task2Result)
         {
+            var rndmIntArray = task2Result.Result;
             Console.WriteLine();
             Console.WriteLine("ThirdTask is running");
             Array.Sort(rndmIntArray);
@@ -51,11 +53,13 @@ namespace MultiThreading.Task2.Chaining
             {
                 Console.WriteLine(rndmIntArray[i]);
             }
-            Console.WriteLine("ThirdTask is run");
+            Console.WriteLine("ThirdTask was run");
+            return rndmIntArray;
         }
 
-        private static void SecondTask(int[] rndmIntArray)
+        private static int[] SecondTask(Task<int[]> task1Result)
         {
+            var rndmIntArray = task1Result.Result;
             Console.WriteLine();
             Console.WriteLine("SecondTask is running");
             int rndmNumber = random.Next(1, 20);
@@ -64,11 +68,11 @@ namespace MultiThreading.Task2.Chaining
                 rndmIntArray[i] = rndmIntArray[i] * rndmNumber;
                 Console.WriteLine(rndmIntArray[i]);
             }
-            Console.WriteLine("SecondTask is run");
-
+            Console.WriteLine("SecondTask was run");
+            return rndmIntArray;
         }
 
-        private static void FirstTask(int[] rndmIntArray)
+        private static int[] FirstTask(int[] rndmIntArray)
         {
             Console.WriteLine("FirstTask is running");
             for (int i = 0; i < rndmIntArrayLength; i++)
@@ -76,7 +80,8 @@ namespace MultiThreading.Task2.Chaining
                 rndmIntArray[i] = random.Next(1, 20);
                 Console.WriteLine(rndmIntArray[i]);
             }
-            Console.WriteLine("FirstTask is run");
+            Console.WriteLine("FirstTask was run");
+            return rndmIntArray;
         }
     }
 }

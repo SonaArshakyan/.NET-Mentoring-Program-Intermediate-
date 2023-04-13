@@ -31,13 +31,17 @@ namespace MultiThreading.Task1._100Tasks
             Task[] tasksArray = new Task[TaskAmount];
 
             for (int i = 0; i < TaskAmount; i++)
+            {
+                var ii = i;
+
                 tasksArray[i] = Task.Factory.StartNew(() =>
                 {
                     for (int j = 1; j <= MaxIterationsCount; j++)
                     {
-                        Output(i, j);
+                        Output(ii, j);
                     }
                 });
+            }
 
             Task.WaitAll(tasksArray);
         }
