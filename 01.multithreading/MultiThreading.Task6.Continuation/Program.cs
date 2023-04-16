@@ -24,25 +24,47 @@ namespace MultiThreading.Task6.Continuation
             Console.WriteLine("Demonstrate the work of the each case with console utility.");
             Console.WriteLine();
 
-            Task parentTask = Task.Run(() => ParentTask());
+            var cancelSource = new CancellationTokenSource();
+            CancellationToken token = cancelSource.Token;
+
+            Task parentTask = Task.Run(() => ParentTask(token), token);
             Task taskA = parentTask.ContinueWith(t => TaskA());
-            Task taskB = parentTask.ContinueWith((resultOfParentTask) => { if (resultOfParentTask.IsFaulted) TaskB(); });
-            Task taskC = parentTask.ContinueWith((resultOfParentTask) => { if (resultOfParentTask.IsFaulted) TaskC(); }, TaskContinuationOptions.ExecuteSynchronously);
-            Task taskD = parentTask.ContinueWith((resultOfParentTask) => { if (resultOfParentTask.IsCanceled) TaskD(); }, TaskContinuationOptions.LongRunning);
+            Task taskB = parentTask.ContinueWith((resultOfParentTask) =>
+            {
+                if (resultOfParentTask.IsFaulted)
+                    TaskB();
+            },
+            TaskContinuationOptions.OnlyOnFaulted);
+            Task taskC = parentTask.ContinueWith((resultOfParentTask) =>
+            {
+                if (resultOfParentTask.IsFaulted)
+                    TaskC();
+            },
+            TaskContinuationOptions.OnlyOnFaulted & TaskContinuationOptions.ExecuteSynchronously);
+            Task taskD = parentTask.ContinueWith((resultOfParentTask) =>
+            {
+                if (resultOfParentTask.IsCanceled)
+                    TaskD(token);
+            }, TaskContinuationOptions.OnlyOnCanceled);
+
+            cancelSource.Cancel();
+
             try
             {
 
                 Task.WaitAll(parentTask, taskA, taskB, taskC, taskD);
             }
-            catch
+            catch (AggregateException ex)
             {
                 Console.WriteLine();
                 Console.WriteLine("Parent task was failed!");
+                if (ex.InnerException is OperationCanceledException)
+                    Console.Write("Task canceled!");
             }
         }
 
 
-        private static void TaskD()
+        private static void TaskD(CancellationToken ct)
         {
             Console.WriteLine();
             Console.WriteLine("TaskD Continuation task is executed outside of the thread pool when the parent task was cancelled. ThreadId : {0} ", Thread.CurrentThread.ManagedThreadId);
@@ -66,10 +88,11 @@ namespace MultiThreading.Task6.Continuation
             Console.WriteLine("TaskA Continuation task is executed regardless of the result of the parent task. ThreadId : {0} ", Thread.CurrentThread.ManagedThreadId);
         }
 
-        private static object ParentTask()
+        private static object ParentTask(CancellationToken token)
         {
             Console.WriteLine();
             Console.WriteLine("Parent task is executing!  ThreadId : {0} ", Thread.CurrentThread.ManagedThreadId);
+            token.ThrowIfCancellationRequested();
             throw new NullReferenceException();
         }
     }
