@@ -24,13 +24,22 @@ namespace MultiThreading.Task5.Threads.SharedCollection
             Console.WriteLine("Use Thread, ThreadPool or Task classes for thread creation and any kind of synchronization constructions.");
             Console.WriteLine();
 
-            for (int i = 1; i <= elementsCount; i++)
+            Task task1 = Task.Factory.StartNew(() =>
             {
-                ThreadPool.QueueUserWorkItem(DoWork, i);
-                Task task = Task.Factory.StartNew(DoWork, null);
-                task.Wait();
-            }
-            Task.WaitAll();
+                for (int i = 1; i <= elementsCount; i++)
+                {
+                    DoWork(i);
+                }
+            });
+            Task task2 = Task.Factory.StartNew( () => 
+            {
+                for (int i = 1; i <= elementsCount; i++)
+                {
+                    DoWork(null);
+                }
+            });
+
+            Task.WaitAll(task1, task2);
         }
 
         private static void DoWork(object state)
@@ -42,14 +51,14 @@ namespace MultiThreading.Task5.Threads.SharedCollection
 
             if (state != null)
             {
-                Console.WriteLine("Thread one Acquired mutex");
+                Console.WriteLine("Thread one Acquired mutex" , Thread.CurrentThread.Name);
                 int elementValue = (int)state;
                 elementsCollection.Add(elementValue);
                 Console.WriteLine("Thread one added an element");
             }
             else
             {
-                Console.WriteLine("Thread second Acquired mutex");
+                Console.WriteLine("Thread second Acquired mutex" , Thread.CurrentThread.Name);
                 foreach (var element in elementsCollection)
                 {
                     Console.Write(element);
