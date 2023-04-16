@@ -40,14 +40,16 @@ namespace MultiThreading.Task6.Continuation
                 if (resultOfParentTask.IsFaulted)
                     TaskC();
             },
-            TaskContinuationOptions.OnlyOnFaulted & TaskContinuationOptions.ExecuteSynchronously);
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+
             Task taskD = parentTask.ContinueWith((resultOfParentTask) =>
             {
                 if (resultOfParentTask.IsCanceled)
-                    TaskD(token);
-            }, TaskContinuationOptions.OnlyOnCanceled);
+                    TaskD();
+            },  TaskContinuationOptions.LongRunning | TaskContinuationOptions.OnlyOnCanceled);
 
-            cancelSource.Cancel();
+           
+           // cancelSource.Cancel();
 
             try
             {
@@ -64,9 +66,10 @@ namespace MultiThreading.Task6.Continuation
         }
 
 
-        private static void TaskD(CancellationToken ct)
+        private static void TaskD()
         {
             Console.WriteLine();
+            Console.WriteLine("Thread belongs to managed thread pool? = " + Thread.CurrentThread.IsThreadPoolThread);
             Console.WriteLine("TaskD Continuation task is executed outside of the thread pool when the parent task was cancelled. ThreadId : {0} ", Thread.CurrentThread.ManagedThreadId);
         }
 
