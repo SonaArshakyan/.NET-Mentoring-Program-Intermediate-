@@ -10,11 +10,16 @@
  */
 
 using System;
+using System.Threading;
 
 namespace MultiThreading.Task4.Threads.Join
 {
     class Program
     {
+        private static readonly int threadsCount = 10;
+        private readonly static Semaphore semaphore = new Semaphore(1, 1);
+        private readonly static Random random = new Random();
+        private static int currentThreadNumber = 1;
         static void Main(string[] args)
         {
             Console.WriteLine("4.	Write a program which recursively creates 10 threads.");
@@ -26,9 +31,41 @@ namespace MultiThreading.Task4.Threads.Join
 
             Console.WriteLine();
 
-            // feel free to add your code
-
+            Thread thread = new Thread(CreateRecursivelyThread);
+            thread.Start(random.Next(10, 20));
+            thread.Join();
             Console.ReadLine();
+        }
+        static void CreateRecursivelyThread(object state)
+        {
+            int stateValue = (int)state;
+            var result = DoWork(stateValue);
+            if (currentThreadNumber <= threadsCount)
+            {
+                Thread thread = new Thread(CreateRecursivelyThread);
+                currentThreadNumber++;
+                thread.Start(currentThreadNumber);
+            }
+            Console.WriteLine();
+            Console.WriteLine("CreateRecursivelyThread method is finished for thread: {0}", currentThreadNumber);
+            // to do, print after DoWork() the last message
+        }
+
+        private static int DoWork(int stateValue)
+        {
+            semaphore.WaitOne();
+
+            Console.WriteLine("Thread {0} has entered the semaphore", currentThreadNumber);
+            stateValue--;
+            Console.WriteLine("State value is : {0} ", stateValue);
+
+            Console.WriteLine("Thread {0} is releasing the semaphore", currentThreadNumber);
+            Console.WriteLine();
+
+            semaphore.Release();
+
+            return stateValue;
+
         }
     }
 }
