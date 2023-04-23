@@ -25,17 +25,16 @@ public class CloudSupportService : ISupportService
         await Task.Delay(100); // emulates assistance request registration.
     }
 
-    public async Task<string> GetSupportInfoAsync(string requestInfo)
+    public Task<string> GetSupportInfoAsync(string requestInfo)
     {
-        await Task.Delay(100);
         var nextRandom = random.Next(2); // emulation of support availability
         var availableSupportRequest = nextRandom == 0
             ? SupportRequests.GetValueOrDefault(requestInfo)
             : null;
 
         return string.IsNullOrEmpty(availableSupportRequest)
-            ? "Support not available. Please try a bit later."
-            : $"Your support request id: {requestInfo}_{availableSupportRequest}. Please check your email for more details.";
+            ? Task.FromResult("Support not available. Please try a bit later.")
+            : Task.FromResult($"Your support request id: {requestInfo}_{availableSupportRequest}. Please check your email for more details.");
     }
 
     #endregion
