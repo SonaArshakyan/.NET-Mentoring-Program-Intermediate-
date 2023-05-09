@@ -24,8 +24,7 @@ namespace GameOfLife
 
 
         private void StartAd()
-        {
-            
+        {            
             {
                 adWindow = new AdWindow[2];
                 for (int i = 0; i < 2; i++)
@@ -50,8 +49,7 @@ namespace GameOfLife
             {
                 adWindow[i].Closed -= AdWindowOnClosed;
                 adWindow[i] = null;
-            }
-            
+            }            
             
         }
 
@@ -80,7 +78,8 @@ namespace GameOfLife
 
         private void ButtonClear_Click(object sender, RoutedEventArgs e)
         {
-            mainGrid.Clear();
+            adWindow = null;
+            mainGrid.Clear(); //?
         }
 
         

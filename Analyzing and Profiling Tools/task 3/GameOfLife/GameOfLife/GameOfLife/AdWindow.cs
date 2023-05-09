@@ -45,20 +45,22 @@ namespace GameOfLife
         
         protected override void OnClosed(EventArgs e)
         {
-            //Unsubscribe();
+            Unsubscribe();
             base.OnClosed(e);
         } 
 
         public void Unsubscribe()
         {
+            Background = null;
+            link = null;
+            imgNmb = 0; ;
             adTimer.Tick -= ChangeAds;
         }
 
         private void ChangeAds(object sender, EventArgs eventArgs)
         {
             
-            ImageBrush myBrush = new ImageBrush();
-            
+            ImageBrush myBrush = new ImageBrush();            
             switch (imgNmb)
             {
                 case 1:
