@@ -9,7 +9,7 @@ namespace Expressions.Task3.E3SQueryProvider.Models.Request
         public FtsQueryRequest()
         {
             // todo: remove that
-            // Statements = new List<Statement>();
+            Statements = new List<Statement>();
             // Filters = new List<Filter>();
             // Sorting = new SortingCollection();
         }
